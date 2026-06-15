@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ffeaf3">
+<title>Earned — bloom your screen time</title>
+<style>
+  :root{
+    --bg:#fff5f9; --card:rgba(255,255,255,.66); --card2:rgba(255,240,247,.8);
+    --line:rgba(232,122,160,.18); --line2:rgba(232,122,160,.4);
+    --ink:#6b2747; --mut:#b87a98; --acc:#ff7eb6; --acc2:#e84d92; --lav:#c98bff;
+    --good:#ff8fc4; --warn:#ffb46b; --bad:#ff6f91;
+    --radius:24px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.45;
+    max-width:520px; margin:0 auto; padding:20px 16px 130px;
+    -webkit-font-smoothing:antialiased; position:relative; min-height:100vh; overflow-x:hidden;
+  }
+  .aurora{position:fixed; inset:0; z-index:-1; overflow:hidden; background:linear-gradient(180deg,#fff5f9,#ffeaf3)}
+  .aurora span{position:absolute; border-radius:50%; filter:blur(75px); opacity:.55; animation:float 20s ease-in-out infinite}
+  .aurora .a{width:340px; height:340px; background:#ffb6d9; top:-120px; left:-80px}
+  .aurora .b{width:300px; height:300px; background:#d98fff; top:140px; right:-110px; animation-delay:-7s}
+  .aurora .c{width:280px; height:280px; background:#ffd0a8; bottom:-90px; left:30px; animation-delay:-12s}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-30px) scale(1.08)}66%{transform:translate(-20px,20px) scale(.95)}}
+  /* drifting petals */
+  .petal{position:fixed; top:-30px; z-index:-1; font-size:18px; opacity:.5; animation:fall linear infinite}
+  @keyframes fall{0%{transform:translateY(-30px) rotate(0)}100%{transform:translateY(105vh) rotate(360deg)}}
+
+  h1{font-family:Georgia,"Times New Roman",serif; font-size:27px; margin:0; letter-spacing:.3px; font-weight:700; font-style:italic;
+     background:linear-gradient(90deg,var(--acc2),var(--lav));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  h2{font-size:12px; text-transform:uppercase; letter-spacing:2px; color:var(--mut); margin:30px 4px 14px; font-weight:700}
+  h2 .deco{opacity:.7}
+  .sub{color:var(--mut); font-size:13px; margin:3px 0 0; font-style:italic}
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px}
+
+  .glass{background:var(--card); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 12px 40px rgba(232,77,146,.12)}
+
+  .streakbox{text-align:center; padding:9px 13px; border-radius:18px}
+  .flame{font-weight:800; font-size:17px; background:linear-gradient(90deg,#ff9a6b,#ff5fa2);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+  .hero{padding:26px 22px; margin-top:18px; text-align:center; position:relative; overflow:hidden}
+  .hero::before{content:"🌸"; position:absolute; top:10px; right:16px; font-size:22px; opacity:.5}
+  .hero::after{content:"🌷"; position:absolute; bottom:10px; left:16px; font-size:20px; opacity:.45}
+  .hero .label{color:var(--mut); font-size:12px; text-transform:uppercase; letter-spacing:1.8px}
+  .bal{font-size:62px; font-weight:800; line-height:1.05; margin:8px 0 4px; letter-spacing:-1px;
+    background:linear-gradient(180deg,#ff7eb6,#e84d92);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .bal small{font-size:20px; color:var(--mut); font-weight:600; -webkit-text-fill-color:var(--mut)}
+  .bal.bump{animation:bump .4s ease}
+  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+  .meta{color:var(--mut); font-size:13px}
+  .goalbar{height:8px; background:rgba(232,122,160,.16); border-radius:10px; margin:16px auto 4px; overflow:hidden; max-width:280px}
+  .goalbar i{display:block; height:100%; width:0; border-radius:10px; background:linear-gradient(90deg,var(--acc),var(--lav)); transition:width .5s cubic-bezier(.2,.8,.2,1)}
+
+  .card{padding:16px}
+
+  .habit{display:flex; align-items:center; gap:12px; padding:13px; background:var(--card2); border:1px solid var(--line); border-radius:18px; margin-bottom:10px; transition:transform .15s}
+  .habit:active{transform:scale(.99)}
+  .habit .emoji{font-size:24px; width:40px; height:40px; display:grid; place-items:center; background:rgba(255,255,255,.6); border-radius:13px}
+  .habit .info{flex:1; min-width:0}
+  .habit .name{font-weight:650; font-size:15px}
+  .habit .worth{color:var(--acc2); font-size:12.5px; font-weight:700}
+  .habit button.earn{border:none; background:linear-gradient(135deg,var(--acc),var(--acc2)); color:#fff; font-weight:800; padding:10px 16px; border-radius:14px; font-size:14px; cursor:pointer; white-space:nowrap; box-shadow:0 7px 18px rgba(232,77,146,.35); transition:transform .12s}
+  .habit button.earn:active{transform:scale(.92)}
+  .habit .del{background:none; border:none; color:var(--mut); font-size:20px; cursor:pointer; padding:2px 4px; opacity:.55}
+
+  /* category headers */
+  .cat{display:flex; align-items:center; gap:8px; margin:18px 2px 10px; font-weight:800; font-size:13px; color:var(--ink)}
+  .cat .ico{font-size:16px}
+  .cat .ln{flex:1; height:1px; background:var(--line)}
+
+  .spendrow{display:flex; gap:9px; flex-wrap:wrap}
+  .chip{flex:1; min-width:62px; text-align:center; padding:14px 8px; border-radius:16px; background:var(--card2); border:1px solid var(--line); cursor:pointer; font-weight:800; font-size:17px; transition:transform .12s, border-color .2s}
+  .chip:active{transform:scale(.93)}
+  .chip:not(.dis):hover{border-color:var(--line2)}
+  .chip small{display:block; font-size:10.5px; color:var(--mut); font-weight:600; text-transform:uppercase; letter-spacing:.6px}
+  .chip.dis{opacity:.3; pointer-events:none}
+
+  .timer{text-align:center; padding:6px 0}
+  .ring{position:relative; width:200px; height:200px; margin:6px auto 4px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring circle{fill:none; stroke-width:12; stroke-linecap:round}
+  .ring .track{stroke:rgba(232,122,160,.16)}
+  .ring .prog{stroke:url(#grad); transition:stroke-dashoffset 1s linear}
+  .ring .count{position:absolute; inset:0; display:grid; place-content:center; font-size:42px; font-weight:800; font-variant-numeric:tabular-nums}
+  .ring .count.low{color:var(--bad)}
+  .btnrow{display:flex; gap:10px; margin-top:10px}
+  button.big{flex:1; border:none; border-radius:15px; padding:14px; font-weight:800; font-size:15px; cursor:pointer}
+  .b-acc{background:linear-gradient(135deg,var(--acc),var(--acc2)); color:#fff}
+  .b-ghost{background:var(--card2); color:var(--ink); border:1px solid var(--line)!important}
+
+  .form{display:none; gap:8px; flex-direction:column; margin-top:12px}
+  .form.open{display:flex; animation:slidein .25s ease}
+  @keyframes slidein{from{opacity:0; transform:translateY(-6px)}to{opacity:1; transform:none}}
+  .form input{background:var(--card2); border:1px solid var(--line); color:var(--ink); padding:12px; border-radius:14px; font-size:15px; width:100%}
+  .form input:focus{outline:none; border-color:var(--acc)}
+  .frow{display:flex; gap:8px}
+  .frow input{flex:1}
+  .addbtn{width:100%; background:transparent; border:1px dashed var(--line2); color:var(--mut); padding:13px; border-radius:15px; cursor:pointer; font-size:14px; font-weight:700; transition:.2s}
+  .addbtn:hover{color:var(--acc2); border-color:var(--acc)}
+
+  /* weekly goal */
+  .goalset{display:flex; align-items:center; gap:10px; justify-content:center; flex-wrap:wrap}
+  .goalset input{width:90px; background:var(--card2); border:1px solid var(--line); color:var(--ink); padding:9px; border-radius:12px; font-size:15px; text-align:center; font-weight:700}
+  .goalset .lbl{font-size:13px; color:var(--mut)}
+  .wknet{font-size:30px; font-weight:800; text-align:center; margin:6px 0 2px}
+  .wknet.good{color:var(--acc2)} .wknet.bad{color:var(--bad)}
+
+  /* chart */
+  .chart{display:flex; align-items:flex-end; justify-content:space-between; gap:6px; height:130px; margin-top:6px}
+  .bar{flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; height:100%}
+  .bars{flex:1; width:100%; display:flex; align-items:flex-end; justify-content:center; gap:3px}
+  .bars i{width:42%; border-radius:6px 6px 0 0; transition:height .5s cubic-bezier(.2,.8,.2,1)}
+  .bars .e{background:linear-gradient(180deg,var(--acc),var(--acc2))}
+  .bars .s{background:rgba(201,139,255,.55)}
+  .bar .d{font-size:10px; color:var(--mut); font-weight:600}
+  .legend{display:flex; gap:16px; justify-content:center; margin-top:10px; font-size:11.5px; color:var(--mut)}
+  .legend i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:middle}
+  .honest{text-align:center; margin-top:14px; font-size:13px; color:var(--mut)}
+  .honest b{color:var(--acc2); font-size:15px}
+
+  .stats{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+  .stat{background:var(--card2); border:1px solid var(--line); border-radius:18px; padding:15px 8px; text-align:center}
+  .stat .n{font-size:24px; font-weight:800}
+  .stat .l{font-size:10.5px; color:var(--mut); text-transform:uppercase; letter-spacing:.8px; margin-top:3px}
+  .stat .n.good{color:var(--acc2)} .stat .n.bad{color:var(--bad)}
+
+  .muted{color:var(--mut); font-size:13px}
+  .center{text-align:center}
+  .toast{position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px); background:linear-gradient(135deg,var(--acc),var(--acc2)); color:#fff; font-weight:800; padding:13px 22px; border-radius:30px; opacity:0; transition:.28s cubic-bezier(.2,.8,.2,1); pointer-events:none; z-index:80; font-size:14px; box-shadow:0 8px 28px rgba(232,77,146,.4)}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .reset{background:none; border:none; color:var(--mut); font-size:12px; text-decoration:underline; cursor:pointer; margin-top:22px; opacity:.7}
+
+  .fly{position:fixed; z-index:90; font-weight:800; font-size:18px; color:var(--acc2); pointer-events:none; animation:fly 1s ease-out forwards}
+  @keyframes fly{0%{opacity:0; transform:translateY(0) scale(.8)}15%{opacity:1}100%{opacity:0; transform:translateY(-70px) scale(1.2)}}
+
+  /* honesty modal */
+  .overlay{position:fixed; inset:0; background:rgba(107,39,71,.45); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; z-index:100; padding:24px}
+  .overlay.show{display:flex; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal{background:#fff; border-radius:26px; padding:28px 24px; max-width:360px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(107,39,71,.3)}
+  .modal .big-emoji{font-size:44px}
+  .modal h3{margin:10px 0 6px; font-size:20px}
+  .modal p{color:var(--mut); font-size:14px; margin:0 0 20px}
+</style>
+</head>
+<body>
+<div class="aurora"><span class="a"></span><span class="b"></span><span class="c"></span></div>
+
+<header>
+  <div>
+    <h1>Earned</h1>
+    <p class="sub">Do lovely things. Bloom your screen time. 🌸</p>
+  </div>
+  <div class="streakbox glass">
+    <div class="flame" id="streak">🔥 0</div>
+    <div class="muted" style="font-size:10.5px; margin-top:1px">day streak</div>
+  </div>
+</header>
+
+<div class="hero glass">
+  <div class="label">Screen time banked</div>
+  <div class="bal" id="balance">0<small> min</small></div>
+  <div class="goalbar"><i id="goalFill"></i></div>
+  <div class="meta" id="heroMeta">Earn some petals to get started</div>
+</div>
+
+<h2><span class="deco">🌷</span> Spend your time</h2>
+<div class="card glass">
+  <div id="spendArea">
+    <p class="muted center" style="margin:0 0 14px">Cash in banked minutes for a guilt-free session.</p>
+    <div class="spendrow" id="spendChips"></div>
+  </div>
+  <div class="timer" id="timerArea" style="display:none">
+    <div class="muted">Scrolling session</div>
+    <div class="ring">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ff7eb6"/><stop offset="100%" stop-color="#c98bff"/>
+        </linearGradient></defs>
+        <circle class="track" cx="100" cy="100" r="88"/>
+        <circle class="prog" id="ring" cx="100" cy="100" r="88"/>
+      </svg>
+      <div class="count" id="count">00:00</div>
+    </div>
+    <div class="btnrow">
+      <button class="big b-ghost" id="endEarly">I'm done early · refund unused</button>
+    </div>
+  </div>
+</div>
+
+<h2><span class="deco">📈</span> This week</h2>
+<div class="card glass">
+  <div class="goalset" style="margin-bottom:14px">
+    <span class="lbl">Net goal this week</span>
+    <input id="goalInput" type="number" inputmode="numeric">
+    <span class="lbl">min</span>
+  </div>
+  <div class="wknet" id="wknet">+0</div>
+  <div class="goalbar"><i id="wkFill"></i></div>
+  <div class="muted center" id="wkMsg" style="margin-top:6px"></div>
+  <div class="chart" id="chart"></div>
+  <div class="legend">
+    <span><i style="background:linear-gradient(180deg,#ff7eb6,#e84d92)"></i>Earned</span>
+    <span><i style="background:rgba(201,139,255,.55)"></i>Spent</span>
+  </div>
+  <div class="honest" id="honest"></div>
+</div>
+
+<h2><span class="deco">🌻</span> Earn credits</h2>
+<div id="habits"></div>
+<button class="addbtn" id="toggleForm">+ Add a habit</button>
+<div class="form glass" id="form" style="padding:14px">
+  <div class="frow">
+    <input id="hEmoji" placeholder="🌸" maxlength="2" style="flex:0 0 56px; text-align:center">
+    <input id="hName" placeholder="Habit name (e.g. Read 20 min)">
+  </div>
+  <div class="frow">
+    <input id="hCredits" type="number" inputmode="numeric" placeholder="Minutes earned">
+    <button class="big b-acc" id="saveHabit" style="flex:0 0 100px">Save</button>
+  </div>
+</div>
+
+<h2><span class="deco">🌼</span> Today</h2>
+<div class="stats">
+  <div class="stat glass"><div class="n good" id="sEarned">0</div><div class="l">Earned</div></div>
+  <div class="stat glass"><div class="n bad" id="sSpent">0</div><div class="l">Spent</div></div>
+  <div class="stat glass"><div class="n" id="sNet">0</div><div class="l">Net min</div></div>
+</div>
+
+<div class="center"><button class="reset" id="reset">Reset everything</button></div>
+<div class="toast" id="toast"></div>
+
+<!-- honesty modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="big-emoji">🌸</div>
+    <h3>Time's up</h3>
+    <p>Be honest with yourself, did you actually put the phone down when the timer ended?</p>
+    <div class="btnrow">
+      <button class="big b-ghost" id="hNo">Not yet…</button>
+      <button class="big b-acc" id="hYes">Yes, I stopped</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const todayKey = () => new Date().toISOString().slice(0,10);
+const DAILY_GOAL = 60;
+
+const DEFAULTS = [
+  {id:'walk', emoji:'🚶', name:'Walk 10 min', credits:15, cat:'Body'},
+  {id:'move', emoji:'🏋️', name:'Workout 20 min', credits:25, cat:'Body'},
+  {id:'run', emoji:'🏃', name:'Go for a run', credits:30, cat:'Body'},
+  {id:'yoga', emoji:'🧎', name:'Yoga session', credits:20, cat:'Body'},
+  {id:'cycle', emoji:'🚴', name:'Cycle 20 min', credits:25, cat:'Body'},
+  {id:'stretch', emoji:'🤸', name:'Stretch', credits:8, cat:'Body'},
+  {id:'water', emoji:'💧', name:'Drink water', credits:5, cat:'Body'},
+  {id:'meal', emoji:'🥗', name:'Healthy meal', credits:15, cat:'Body'},
+  {id:'sun', emoji:'☀️', name:'10 min sunlight', credits:10, cat:'Body'},
+  {id:'sleep', emoji:'😴', name:'In bed by 11', credits:20, cat:'Body'},
+  {id:'early', emoji:'🌅', name:'Up before 7', credits:15, cat:'Body'},
+  {id:'skin', emoji:'🧴', name:'Skincare routine', credits:6, cat:'Body'},
+  {id:'floss', emoji:'🦷', name:'Floss & brush', credits:5, cat:'Body'},
+  {id:'nosnack', emoji:'🍎', name:'Skip the junk', credits:10, cat:'Body'},
+
+  {id:'medit', emoji:'🧘', name:'Meditate 10 min', credits:15, cat:'Mind'},
+  {id:'breath', emoji:'🌬️', name:'Breathing 5 min', credits:8, cat:'Mind'},
+  {id:'journ', emoji:'📓', name:'Journal', credits:10, cat:'Mind'},
+  {id:'grat', emoji:'🙏', name:'Gratitude list', credits:8, cat:'Mind'},
+  {id:'read', emoji:'📚', name:'Read 20 min', credits:20, cat:'Mind'},
+  {id:'learn', emoji:'🧠', name:'Learn something', credits:20, cat:'Mind'},
+  {id:'lang', emoji:'🗣️', name:'Practise a language', credits:18, cat:'Mind'},
+  {id:'focus', emoji:'🎯', name:'Deep work 25 min', credits:30, cat:'Mind'},
+  {id:'creat', emoji:'🎨', name:'Make something', credits:20, cat:'Mind'},
+  {id:'plan', emoji:'🗓️', name:'Plan your day', credits:12, cat:'Mind'},
+  {id:'fresh', emoji:'🌳', name:'Step outside', credits:10, cat:'Mind'},
+
+  {id:'bed', emoji:'🛏️', name:'Make the bed', credits:5, cat:'Home'},
+  {id:'tidy', emoji:'🧹', name:'Tidy your space', credits:12, cat:'Home'},
+  {id:'cook', emoji:'🍳', name:'Cook a meal', credits:18, cat:'Home'},
+  {id:'dishes', emoji:'🧽', name:'Wash the dishes', credits:10, cat:'Home'},
+  {id:'laundry', emoji:'🧺', name:'Do the laundry', credits:12, cat:'Home'},
+  {id:'plant', emoji:'🪴', name:'Water the plants', credits:5, cat:'Home'},
+  {id:'inbox', emoji:'📧', name:'Clear your inbox', credits:12, cat:'Home'},
+  {id:'budget', emoji:'💰', name:'Check finances', credits:12, cat:'Home'},
+
+  {id:'call', emoji:'📞', name:'Call a friend', credits:15, cat:'Social'},
+  {id:'family', emoji:'👨‍👩‍👧', name:'Time with family', credits:18, cat:'Social'},
+  {id:'pet', emoji:'🐶', name:'Play with the pet', credits:8, cat:'Social'},
+  {id:'kind', emoji:'💛', name:'Do a kind thing', credits:12, cat:'Social'},
+  {id:'noscrl', emoji:'🚫', name:'Phone-free meal', credits:10, cat:'Social'},
+];
+const CATS = [
+  {name:'Body', ico:'🌷'},{name:'Mind', ico:'🌸'},{name:'Home', ico:'🌿'},{name:'Social', ico:'🌺'},
+];
+const SPEND = [10, 15, 30, 45, 60];
+const RING_LEN = 2 * Math.PI * 88;
+
+let state = load();
+
+function load(){
+  try{ const raw=JSON.parse(localStorage.getItem('earned')); if(raw && raw.habits) return migrate(raw); }catch(e){}
+  return { balance:0, habits:DEFAULTS.slice(), history:{}, streak:0, lastEarnDay:null, weeklyGoal:200 };
+}
+function migrate(s){
+  s.history=s.history||{}; s.streak=s.streak||0; s.weeklyGoal=s.weeklyGoal||200;
+  return s;
+}
+function save(){ localStorage.setItem('earned', JSON.stringify(state)); }
+function day(k){ k=k||todayKey(); if(!state.history[k]) state.history[k]={earned:0,spent:0,hy:0,hn:0}; return state.history[k]; }
+
+function last7(){
+  const out=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(Date.now()-i*86400000);
+    const k=d.toISOString().slice(0,10);
+    const h=state.history[k]||{earned:0,spent:0,hy:0,hn:0};
+    out.push({k, label:['S','M','T','W','T','F','S'][d.getDay()], ...h});
+  }
+  return out;
+}
+
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1700); }
+function fly(text,x,y){ const f=document.createElement('div'); f.className='fly'; f.textContent=text; f.style.left=x+'px'; f.style.top=y+'px'; document.body.appendChild(f); setTimeout(()=>f.remove(),1000); }
+function buzz(){ if(navigator.vibrate) navigator.vibrate(12); }
+
+function updateStreak(){
+  const t=todayKey(); if(state.lastEarnDay===t) return;
+  const y=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  state.streak=(state.lastEarnDay===y)?state.streak+1:1; state.lastEarnDay=t;
+}
+
+function earn(h,ev){
+  state.balance+=h.credits; day().earned+=h.credits; updateStreak();
+  save(); render(); buzz();
+  $('#balance').classList.remove('bump'); void $('#balance').offsetWidth; $('#balance').classList.add('bump');
+  if(ev) fly('+'+h.credits, ev.clientX-12, ev.clientY-24);
+  toast('+'+h.credits+' min banked 🌸');
+}
+
+function render(){
+  $('#balance').innerHTML=state.balance+'<small> min</small>';
+  $('#streak').textContent='🔥 '+state.streak;
+  const d=day();
+  $('#sEarned').textContent=d.earned; $('#sSpent').textContent=d.spent;
+  const net=d.earned-d.spent, netEl=$('#sNet');
+  netEl.textContent=(net>=0?'+':'')+net; netEl.className='n '+(net>0?'good':net<0?'bad':'');
+  $('#goalFill').style.width=Math.min(100,Math.round(d.earned/DAILY_GOAL*100))+'%';
+  $('#heroMeta').textContent = d.earned>=DAILY_GOAL?'Daily goal in full bloom 🌷'
+    : state.balance>0?(DAILY_GOAL-d.earned)+' min to today’s goal'
+    : 'Earn some petals to get started';
+
+  // habits grouped by category
+  const hc=$('#habits'); hc.innerHTML='';
+  CATS.forEach(c=>{
+    const list=state.habits.filter(h=>(h.cat||'Mind')===c.name);
+    if(!list.length) return;
+    const head=document.createElement('div'); head.className='cat';
+    head.innerHTML=`<span class="ico">${c.ico}</span>${c.name}<span class="ln"></span>`;
+    hc.appendChild(head);
+    list.forEach(h=>{
+      const el=document.createElement('div'); el.className='habit';
+      el.innerHTML=`<div class="emoji">${h.emoji||'🌸'}</div>
+        <div class="info"><div class="name">${escapeHtml(h.name)}</div><div class="worth">+${h.credits} min</div></div>
+        <button class="earn">Done</button><button class="del">×</button>`;
+      el.querySelector('.earn').onclick=(ev)=>earn(h,ev);
+      el.querySelector('.del').onclick=()=>{ if(confirm('Remove "'+h.name+'"?')){ state.habits=state.habits.filter(x=>x!==h); save(); render(); } };
+      hc.appendChild(el);
+    });
+  });
+
+  // spend chips
+  const sc=$('#spendChips'); sc.innerHTML='';
+  SPEND.forEach(m=>{ const c=document.createElement('div'); c.className='chip'+(state.balance<m?' dis':''); c.innerHTML=m+'<small>min</small>'; c.onclick=()=>startSession(m); sc.appendChild(c); });
+
+  renderWeek();
+}
+
+function renderWeek(){
+  const wk=last7();
+  const earned=wk.reduce((a,b)=>a+b.earned,0), spent=wk.reduce((a,b)=>a+b.spent,0);
+  const net=earned-spent;
+  const ne=$('#wknet'); ne.textContent=(net>=0?'+':'')+net; ne.className='wknet '+(net>=0?'good':'bad');
+  const goal=state.weeklyGoal||200;
+  $('#wkFill').style.width=Math.max(0,Math.min(100,Math.round(net/goal*100)))+'%';
+  $('#wkMsg').textContent = net>=goal?'Goal reached, gorgeous work 🌟'
+    : net>=0?(goal-net)+' min to your weekly goal'
+    : 'In the red, earn it back 🌱';
+  if($('#goalInput')!==document.activeElement) $('#goalInput').value=goal;
+
+  // chart
+  const max=Math.max(10,...wk.map(d=>Math.max(d.earned,d.spent)));
+  const ch=$('#chart'); ch.innerHTML='';
+  wk.forEach(d=>{
+    const b=document.createElement('div'); b.className='bar';
+    b.innerHTML=`<div class="bars"><i class="e" style="height:${Math.round(d.earned/max*100)}%"></i><i class="s" style="height:${Math.round(d.spent/max*100)}%"></i></div><div class="d">${d.label}</div>`;
+    ch.appendChild(b);
+  });
+
+  // honesty
+  const hy=wk.reduce((a,b)=>a+(b.hy||0),0), hn=wk.reduce((a,b)=>a+(b.hn||0),0), tot=hy+hn;
+  $('#honest').innerHTML = tot? `You stopped on time <b>${Math.round(hy/tot*100)}%</b> of sessions this week (${hy}/${tot})`
+    : 'Finish a session to start tracking your honesty 💗';
+}
+
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* timer */
+let timer=null, remaining=0, total=0;
+const ring=$('#ring'); ring.style.strokeDasharray=RING_LEN;
+
+function startSession(min){
+  if(state.balance<min) return;
+  state.balance-=min; day().spent+=min; save(); render(); buzz();
+  total=remaining=min*60;
+  $('#spendArea').style.display='none'; $('#timerArea').style.display='block';
+  tick(); timer=setInterval(tick,1000);
+}
+function tick(){
+  const m=Math.floor(remaining/60), s=remaining%60, el=$('#count');
+  el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  el.classList.toggle('low', remaining<=30);
+  ring.style.strokeDashoffset=RING_LEN*(1-remaining/total);
+  if(remaining<=0){ finishSession(); return; } remaining--;
+}
+function finishSession(){
+  clearInterval(timer); timer=null;
+  $('#timerArea').style.display='none'; $('#spendArea').style.display='block';
+  buzz();
+  $('#overlay').classList.add('show'); // ask the honesty question
+}
+$('#hYes').onclick=()=>{ day().hy++; save(); $('#overlay').classList.remove('show'); render(); toast('Lovely, that’s the streak 🌸'); };
+$('#hNo').onclick=()=>{ day().hn++; save(); $('#overlay').classList.remove('show'); render(); toast('Noted. Be gentle, try again 🌱'); };
+
+function endEarly(){
+  clearInterval(timer); timer=null;
+  const left=Math.ceil(remaining/60); state.balance+=left; day().spent-=left;
+  day().hy++; // stopping early counts as honest
+  save();
+  $('#timerArea').style.display='none'; $('#spendArea').style.display='block'; render();
+  toast(left+' min refunded 💗');
+}
+$('#endEarly').onclick=endEarly;
+
+/* weekly goal input */
+$('#goalInput').onchange=()=>{ const v=parseInt($('#goalInput').value,10); if(v>0){ state.weeklyGoal=v; save(); renderWeek(); } };
+
+/* add habit */
+$('#toggleForm').onclick=()=>$('#form').classList.toggle('open');
+$('#saveHabit').onclick=()=>{
+  const name=$('#hName').value.trim(), credits=parseInt($('#hCredits').value,10), emoji=$('#hEmoji').value.trim()||'🌸';
+  if(!name||!credits||credits<1){ toast('Add a name and minutes'); return; }
+  state.habits.push({id:'h'+Date.now(),emoji,name,credits,cat:'Mind'});
+  $('#hName').value=''; $('#hCredits').value=''; $('#hEmoji').value=''; $('#form').classList.remove('open');
+  save(); render(); toast('Habit added 🌷');
+};
+$('#reset').onclick=()=>{ if(confirm('Wipe all data and start fresh?')){ localStorage.removeItem('earned'); state=load(); render(); } };
+
+/* petals */
+(function petals(){
+  const set=['🌸','🌷','🌺','💮','🏵️'];
+  for(let i=0;i<7;i++){
+    const p=document.createElement('div'); p.className='petal'; p.textContent=set[i%set.length];
+    p.style.left=(i*14+5)+'%'; p.style.animationDuration=(14+i*3)+'s'; p.style.animationDelay=(-i*4)+'s';
+    document.body.appendChild(p);
+  }
+})();
+
+render();
+</script>
+</body>
+</html>
