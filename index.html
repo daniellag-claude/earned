@@ -357,6 +357,9 @@ function load(){
 }
 function migrate(s){
   s.history=s.history||{}; s.streak=s.streak||0; s.weeklyGoal=s.weeklyGoal||200;
+  // merge in any new default habits (by id) so updates appear without wiping data
+  const have=new Set(s.habits.map(h=>h.id));
+  DEFAULTS.forEach(d=>{ if(!have.has(d.id)) s.habits.push(d); });
   return s;
 }
 function save(){ localStorage.setItem('earned', JSON.stringify(state)); }
