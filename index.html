@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#ffeaf3">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="mask-icon" href="favicon.svg" color="#e84d92">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Earned">
 <title>Earned — bloom your screen time</title>
 <style>
   :root{
@@ -307,9 +312,21 @@ const DEFAULTS = [
   {id:'learn', emoji:'🧠', name:'Learn something', credits:20, cat:'Mind'},
   {id:'lang', emoji:'🗣️', name:'Practise a language', credits:18, cat:'Mind'},
   {id:'focus', emoji:'🎯', name:'Deep work 25 min', credits:30, cat:'Mind'},
-  {id:'creat', emoji:'🎨', name:'Make something', credits:20, cat:'Mind'},
   {id:'plan', emoji:'🗓️', name:'Plan your day', credits:12, cat:'Mind'},
   {id:'fresh', emoji:'🌳', name:'Step outside', credits:10, cat:'Mind'},
+
+  {id:'draw', emoji:'✏️', name:'Sketch or draw', credits:18, cat:'Creative'},
+  {id:'paint', emoji:'🎨', name:'Paint something', credits:20, cat:'Creative'},
+  {id:'write', emoji:'✍️', name:'Write 20 min', credits:20, cat:'Creative'},
+  {id:'music', emoji:'🎸', name:'Play an instrument', credits:20, cat:'Creative'},
+  {id:'sing', emoji:'🎤', name:'Sing your heart out', credits:12, cat:'Creative'},
+  {id:'dance', emoji:'💃', name:'Dance it out', credits:15, cat:'Creative'},
+  {id:'photo', emoji:'📷', name:'Take photos', credits:12, cat:'Creative'},
+  {id:'craft', emoji:'🧵', name:'Craft or DIY', credits:18, cat:'Creative'},
+  {id:'bake', emoji:'🧁', name:'Bake something', credits:18, cat:'Creative'},
+  {id:'design', emoji:'🖌️', name:'Design something', credits:18, cat:'Creative'},
+  {id:'poem', emoji:'📝', name:'Write a poem', credits:12, cat:'Creative'},
+  {id:'film', emoji:'🎬', name:'Make a video', credits:20, cat:'Creative'},
 
   {id:'bed', emoji:'🛏️', name:'Make the bed', credits:5, cat:'Home'},
   {id:'tidy', emoji:'🧹', name:'Tidy your space', credits:12, cat:'Home'},
@@ -327,7 +344,7 @@ const DEFAULTS = [
   {id:'noscrl', emoji:'🚫', name:'Phone-free meal', credits:10, cat:'Social'},
 ];
 const CATS = [
-  {name:'Body', ico:'🌷'},{name:'Mind', ico:'🌸'},{name:'Home', ico:'🌿'},{name:'Social', ico:'🌺'},
+  {name:'Body', ico:'🌷'},{name:'Mind', ico:'🌸'},{name:'Creative', ico:'🌼'},{name:'Home', ico:'🌿'},{name:'Social', ico:'🌺'},
 ];
 const SPEND = [10, 15, 30, 45, 60];
 const RING_LEN = 2 * Math.PI * 88;
